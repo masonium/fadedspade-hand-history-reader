@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import re
 import sys
 from typing import List, Dict, Set, Tuple
@@ -22,7 +23,7 @@ class HandLog:
         return HandLog({}, set(), set(), [])
 
     def is_empty(self):
-        return self.blinds or self.at_table or self.vpip or self.pots
+        return not (self.blinds or self.at_table or self.vpip or self.pots)
 
 @dataclass
 class HandHistory:
@@ -45,7 +46,7 @@ def read_hand_history(f) -> HandHistory:
     shows = []
     pot = None
     player_adds = []
-    for line in f:
+    for i, line in enumerate(f, 1):
         if line.strip() == "":
             if not hand.is_empty():
                 hands.append(hand)
@@ -82,12 +83,14 @@ def read_hand_history(f) -> HandHistory:
             name = vpip_match.group("name")
             hand.vpip.add(name)
             continue
+
         blind_match = blinds_in.search(line)
         if blind_match:
             name = blind_match.group("name")
             amount = float(blind_match.group("amount")) / 10.0
             hand.blinds[name] = amount
             continue
+
         rake_match = rake_re.search(line)
         if rake_match:
             assert(isinstance(pot, Pot))
